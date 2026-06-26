@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lunar-app-v2';
+const CACHE_NAME = 'lunar-app-v3';
 
 // Archivos estáticos principales
 const urlsToCache = [
