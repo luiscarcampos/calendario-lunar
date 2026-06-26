@@ -38,7 +38,7 @@ body {
 .bg-overlay {
   position: fixed;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(10,20,10,0.3) 0%, rgba(10,20,10,0.7) 100%);
+  background: linear-gradient(to bottom, rgba(10,20,10,0.3) 0%, rgba(10,20,10,0.85) 100%);
   z-index: -1;
 }
 
@@ -95,10 +95,9 @@ body {
 .day-num{ font-size:11px; font-family:'DM Mono',monospace; font-weight:500; color:var(--text); align-self: flex-start; padding-left: 4px; opacity: 0.9;}
 .day-cell.today .day-num{ color:var(--accent); font-weight: 600;}
 
-.cell-icons{ display:flex; gap:4px; justify-content:center; min-height:16px; }
+.cell-icons{ display:flex; gap:4px; justify-content:center; min-height:16px; flex-wrap:wrap; }
 .cell-icon i { font-size: 14px; }
 
-/* La foto de la luna base con opacidad */
 .moon-bg { 
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
   width: 80px; height: 80px; border-radius: 50%; 
@@ -120,14 +119,16 @@ body {
 
 .det-info{flex:1;}
 .det-date{font-size:12px;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:4px;}
-.det-type{font-family:'Lora',serif;font-size:22px;font-weight:500;}
-.det-meta{font-size:13px;color:var(--muted);margin-top:6px; display: flex; gap: 8px; align-items: center;}
-.det-meta i { font-size: 16px; }
+.det-type{font-family:'Lora',serif;font-size:24px;font-weight:500; line-height:1.1;}
+.det-savia{font-size:12px; color:var(--muted); margin-top:4px; font-style:italic;}
+.det-meta{font-size:12px;color:var(--accent);margin-top:6px; display: flex; gap: 8px; align-items: center; font-family:'DM Mono',monospace;}
+.det-meta i { font-size: 14px; }
+
 .det-divider{height:1px;background:var(--border);margin:16px 0;}
-.det-acts-label{ font-size:11px; text-transform:uppercase; color:var(--accent); font-family:'DM Mono',monospace; margin-bottom:12px; letter-spacing: 0.05em;}
+.det-acts-label{ font-size:11px; text-transform:uppercase; color:var(--muted); font-family:'DM Mono',monospace; margin:14px 0 10px; letter-spacing: 0.05em;}
 .det-acts{display:flex;flex-wrap:wrap;gap:8px;}
 .det-act{ display:flex;align-items:center;gap:8px; font-size:12px; font-weight: 500; background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 14px; border:1px solid rgba(255,255,255,0.05); }
-.det-act i { font-size: 20px; }
+.det-act i { font-size: 18px; }
 
 .tooltip{ position:fixed; bottom:0;left:0;right:0; background:rgba(20,30,20,0.85); border-top:1px solid var(--border); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius:24px 24px 0 0; padding:20px 24px 34px; z-index:200; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.32,0.72,0,1); max-width:480px; margin:0 auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.8); }
 .tooltip.visible{transform:translateY(0);}
@@ -135,11 +136,6 @@ body {
 .tooltip-close { background: none; border: none; color: var(--muted); cursor: pointer; display: flex; font-size: 24px;}
 .tooltip-date{ font-family:'DM Mono',monospace; font-size:12px; color:var(--accent); }
 .tooltip-type{ font-family:'Lora',serif; font-size:24px; font-weight:500; margin:4px 0; display: flex; align-items: center; gap: 10px;}
-.tooltip-phase{ font-size:13px; color:var(--muted); margin-bottom:18px; }
-
-.legend{ display:flex; flex-wrap:wrap; gap:16px 20px; padding:0 16px 30px; justify-content: center; }
-.leg{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);}
-.leg i { font-size: 16px; }
 </style>
 </head>
 <body>
@@ -182,7 +178,6 @@ body {
   </div>
 
   <div class="detail glass-panel" id="detailPanel"></div>
-  <div class="legend" id="legend"></div>
 
 </div>
 
@@ -192,8 +187,9 @@ body {
     <button class="tooltip-close" onclick="dismissTooltip(event)"><i class="ph ph-x"></i></button>
   </div>
   <div class="tooltip-type" id="ttType"></div>
-  <div class="tooltip-phase" id="ttPhase"></div>
-  <div class="tooltip-acts det-acts" id="ttActs"></div>
+  <div class="det-savia" id="ttSavia" style="margin-bottom: 16px;"></div>
+  <div id="ttActsAncestral"></div>
+  <div id="ttActsThun"></div>
 </div>
 
 <div class="tooltip" id="filterTooltip">
@@ -223,37 +219,42 @@ const MONTH_BGS = [
 
 const SIGN_TYPE = {0:'fruit',1:'root',2:'flower',3:'leaf',4:'fruit',5:'root',6:'flower',7:'leaf',8:'fruit',9:'root',10:'flower',11:'leaf'};
 
-const ACTS_DEF = {
-  root:[
-    {key:'seed',    icon:'ph-plant', es:'Siembra Raíces', cat: 1},
-    {key:'transplant',icon:'ph-potted-plant',es:'Trasplantes', cat: 1},
-    {key:'compost', icon:'ph-recycle', es:'Elaborar abonos', cat: 1},
-    {key:'trees',   icon:'ph-tree', es:'Abonar árboles',  cat: 1},
-    {key:'garden',  icon:'ph-shovel', es:'Abonar huerta',   cat: 1},
-    {key:'pest',    icon:'ph-bug', es:'Control de plagas', cat: 1},
-    {key:'logistics', icon:'ph-tent', es:'Planificación logística', cat: 4},
-  ],
-  flower:[
-    {key:'prune',   icon:'ph-scissors', es:'Poda aérea', cat: 1},
-    {key:'graft',   icon:'ph-tree-structure', es:'Injertos plantas', cat: 1},
-    {key:'cutting', icon:'ph-leaf', es:'Propagar esquejes', cat: 1},
-    {key:'medicinal',icon:'ph-first-aid',es:'Plantas Medicinales', cat: 3},
-    {key:'hair',    icon:'ph-scissors', es:'Corte Cabello (Fuerte)', cat: 3},
-    {key:'meeting', icon:'ph-users-three', es:'Círculos y encuentros', cat: 4},
-  ],
-  leaf:[
-    {key:'water',   icon:'ph-drop', es:'Riego a fondo', cat: 1},
-    {key:'harvest', icon:'ph-basket', es:'Cosecha de hojas', cat: 1},
-    {key:'weed',    icon:'ph-plant-slash', es:'Control de hierbas', cat: 1},
-    {key:'hairgrow',icon:'ph-scissors', es:'Corte Cabello (Crece)', cat: 3},
-  ],
-  fruit:[
-    {key:'fruitharvest',icon:'ph-orange-slice',es:'Cosecha Frutos', cat: 1},
-    {key:'timber',  icon:'ph-axe', es:'Cortar madera', cat: 2},
-    {key:'preserve',icon:'ph-jar', es:'Preparar conservas', cat: 2},
-    {key:'honey',   icon:'ph-hexagon', es:'Cosecha de Miel', cat: 2},
-  ],
-};
+// ESTRUCTURA UNIFICADA: Sinódico (Primario) y Thun (Secundario)
+const ALL_ACTS = [
+  // --- ANCESTRALES (SINÓDICO) ---
+  {key:'pest', icon:'ph-bug', es:'Control de plagas', cat: 1, type:'syn', group:'nueva'},
+  {key:'weed', icon:'ph-plant-slash', es:'Deshierbe', cat: 1, type:'syn', group:'nueva'},
+  {key:'prune_clean', icon:'ph-scissors', es:'Poda de sanidad', cat: 1, type:'syn', group:'nueva'},
+  {key:'logistics', icon:'ph-tent', es:'Planificación logística', cat: 4, type:'syn', group:'nueva'},
+
+  {key:'seed_aerial', icon:'ph-plant', es:'Siembra follaje/fruto', cat: 1, type:'syn', group:'creciente'},
+  {key:'water', icon:'ph-drop', es:'Riego a fondo', cat: 1, type:'syn', group:'creciente'},
+  {key:'graft', icon:'ph-tree-structure', es:'Injertos', cat: 1, type:'syn', group:'creciente'},
+  {key:'hairgrow', icon:'ph-scissors', es:'Corte Pelo (Crece)', cat: 3, type:'syn', group:'creciente'},
+
+  {key:'harvest', icon:'ph-basket', es:'Cosecha aérea', cat: 1, type:'syn', group:'llena'},
+  {key:'medicinal', icon:'ph-first-aid', es:'Plantas Medicinales', cat: 3, type:'syn', group:'llena'},
+  {key:'meeting', icon:'ph-users-three', es:'Círculos y encuentros', cat: 4, type:'syn', group:'llena'},
+
+  {key:'seed_root', icon:'ph-plant', es:'Siembra raíces', cat: 1, type:'syn', group:'menguante'},
+  {key:'transplant', icon:'ph-potted-plant', es:'Trasplantes', cat: 1, type:'syn', group:'menguante'},
+  {key:'compost', icon:'ph-recycle', es:'Compost y abonos', cat: 1, type:'syn', group:'menguante'},
+  {key:'timber', icon:'ph-axe', es:'Cortar madera', cat: 2, type:'syn', group:'menguante'},
+  {key:'preserve', icon:'ph-jar', es:'Preparar conservas', cat: 2, type:'syn', group:'menguante'},
+
+  // --- BIODINÁMICOS COMPLEMENTARIOS (THUN) ---
+  {key:'soil_prep', icon:'ph-shovel', es:'Preparar camas', cat: 1, type:'thun', group:'root'},
+  {key:'trees', icon:'ph-tree', es:'Cuidado de árboles', cat: 1, type:'thun', group:'root'},
+
+  {key:'flowers', icon:'ph-flower-tulip', es:'Cosecha de flores', cat: 1, type:'thun', group:'flower'},
+  {key:'cutting', icon:'ph-leaf', es:'Propagar esquejes', cat: 1, type:'thun', group:'flower'},
+  {key:'hair_strong', icon:'ph-scissors', es:'Corte Pelo (Fuerza)', cat: 3, type:'thun', group:'flower'},
+
+  {key:'leaf_care', icon:'ph-leaf', es:'Abono foliar', cat: 1, type:'thun', group:'leaf'},
+
+  {key:'seed_extract', icon:'ph-archive', es:'Guardar semillas', cat: 1, type:'thun', group:'fruit'},
+  {key:'honey', icon:'ph-hexagon', es:'Cosecha de miel', cat: 2, type:'thun', group:'fruit'},
+];
 
 let lang = 'es';
 let gmtOffset = -5;
@@ -266,12 +267,15 @@ const T = {
     months:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
     wdFull:['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'],
     wd:['L','M','X','J','V','S','D'],
-    types:{root:'Día de Raíz',flower:'Día de Flor',leaf:'Día de Hoja',fruit:'Día de Fruto'},
-    typeShort:{root:'Raíz',flower:'Flor',leaf:'Hoja',fruit:'Fruto'},
-    phases:['Luna Nueva','Creciente','Cuarto Creciente','Gibosa Creciente','Luna Llena','Gibosa Menguante','Cuarto Menguante','Menguante'],
-    signs:['Aries','Tauro','Géminis','Cáncer','Leo','Virgo','Libra','Escorpio','Sagitario','Capricornio','Acuario','Piscis'],
-    actsLabel:'Actividades Recomendadas',
-    weatherTitle: 'Pronóstico Agrícola'
+    types:{root:'Raíz',flower:'Flor',leaf:'Hoja',fruit:'Fruto'},
+    phases:['Luna Nueva','Creciente','Creciente','Creciente','Luna Llena','Menguante','Menguante','Menguante'],
+    savia:{
+      nueva:'Reposo. La savia se concentra en las raíces.',
+      creciente:'La savia asciende hacia el follaje.',
+      llena:'Máxima vitalidad. Savia concentrada en la copa.',
+      menguante:'La savia desciende hacia la base.'
+    },
+    signs:['Aries','Tauro','Géminis','Cáncer','Leo','Virgo','Libra','Escorpio','Sagitario','Capricornio','Acuario','Piscis']
   }
 };
 
@@ -300,7 +304,14 @@ function getLunarData(year, month, day) {
   else if (synodicAge >= 202.5 && synodicAge < 247.5) phaseIdx = 5;
   else if (synodicAge >= 247.5 && synodicAge < 292.5) phaseIdx = 6;
   else phaseIdx = 7;
-  return { phaseIdx, signIdx, dayType, illum: (1 - Math.cos(synodicAge * Math.PI / 180)) / 2 };
+
+  let synGroup = '';
+  if(phaseIdx === 0) synGroup = 'nueva';
+  else if(phaseIdx >= 1 && phaseIdx <= 3) synGroup = 'creciente';
+  else if(phaseIdx === 4) synGroup = 'llena';
+  else synGroup = 'menguante';
+
+  return { phaseIdx, signIdx, dayType, synGroup };
 }
 
 let userLatitude = 6.2952;
@@ -358,13 +369,8 @@ async function loadWeatherData(lat, lon) {
 }
 
 function buildActFilter() {
-  const allActs = Object.values(ACTS_DEF).flat();
-  const uniqueActs = [];
-  const map = new Map();
-  for(const a of allActs) { if(!map.has(a.key)){ map.set(a.key, true); uniqueActs.push(a); } }
-
   const groups = {1:[], 2:[], 3:[], 4:[]};
-  uniqueActs.forEach(a => groups[a.cat].push(a));
+  ALL_ACTS.forEach(a => groups[a.cat].push(a));
   const catNames = {1:'🌱 Tareas Agrícolas', 2:'🪵 Periferia y Proceso', 3:'✂️ Cuidado Personal', 4:'🏕️ Comunitario'};
 
   let html = '';
@@ -373,7 +379,7 @@ function buildActFilter() {
     html += `<div style="font-size:12px; color:var(--accent); font-family:'DM Mono',monospace; margin:20px 0 10px; text-transform:uppercase; letter-spacing:0.05em;">${catNames[c]}</div>`;
     html += `<div style="display:flex; flex-wrap:wrap; gap:8px;">`;
     groups[c].forEach(a => {
-      html += `<button class="act-chip${checkedActs.has(a.key)?' checked':''}" onclick="toggleAct('${a.key}')"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i> ${a[lang]}</button>`;
+      html += `<button class="act-chip${checkedActs.has(a.key)?' checked':''}" onclick="toggleAct('${a.key}')"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i> ${a.es}</button>`;
     });
     html += `</div>`;
   }
@@ -388,6 +394,10 @@ function toggleAct(key) {
 function clearActFilter() { checkedActs.clear(); render(); }
 function openFilter(e) { if(e) e.stopPropagation(); buildActFilter(); document.getElementById('filterTooltip').classList.add('visible'); }
 function closeFilter(e) { if(e)e.stopPropagation(); document.getElementById('filterTooltip').classList.remove('visible'); }
+
+function getDayActs(synGroup, dayType) {
+  return ALL_ACTS.filter(a => (a.type === 'syn' && a.group === synGroup) || (a.type === 'thun' && a.group === dayType));
+}
 
 function render() {
   const t = T[lang];
@@ -410,14 +420,18 @@ function render() {
   for(let i = 0; i < offset; i++) html += '<div class="day-cell empty"></div>';
 
   for(let d = 1; d <= dim; d++) {
-    const {phaseIdx, dayType} = getLunarData(viewYear, viewMonth, d);
+    const {phaseIdx, dayType, synGroup} = getLunarData(viewYear, viewMonth, d);
     const isToday = d===now.getDate() && viewMonth===now.getMonth() && viewYear===now.getFullYear();
     const isSel = selectedDate && selectedDate.d===d && selectedDate.m===viewMonth && selectedDate.y===viewYear;
     
-    const matches = checkedActs.size === 0 || ACTS_DEF[dayType].some(a => checkedActs.has(a.key));
-    const iconsHtml = ACTS_DEF[dayType].slice(0, 3).map(a => `<span class="cell-icon"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i></span>`).join('');
+    const dayActs = getDayActs(synGroup, dayType);
+    const matches = checkedActs.size === 0 || dayActs.some(a => checkedActs.has(a.key));
+    
+    // Mostramos hasta 4 iconos, priorizando los ancestrales
+    const sortedActs = [...dayActs].sort((a,b) => (a.type==='syn' ? -1 : 1));
+    const iconsHtml = sortedActs.slice(0, 4).map(a => `<span class="cell-icon"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i></span>`).join('');
 
-    html += `<div class="day-cell type-${dayType}${isToday?' today':''}${isSel?' selected':''}${!matches?' dimmed':''}"
+    html += `<div class="day-cell${isToday?' today':''}${isSel?' selected':''}${!matches?' dimmed':''}"
       onclick="handleDayTap(${d},event)">
       <div class="moon-bg"></div>
       <span class="day-num">${d}</span>
@@ -456,12 +470,11 @@ function render() {
 
   const activeDay = selectedDate || {y:now.getFullYear(), m:now.getMonth(), d:now.getDate()};
   renderDetail(activeDay.y, activeDay.m, activeDay.d);
-  renderLegend();
 }
 
 function renderDetail(y, m, d) {
   const t = T[lang];
-  const {phaseIdx, signIdx, dayType, illum} = getLunarData(y, m, d);
+  const {phaseIdx, signIdx, dayType, synGroup} = getLunarData(y, m, d);
   const dateStr = `${t.wdFull[new Date(y, m, d).getDay()]} , ${d} ${t.months[m]} ${y}`;
 
   const sh = 'rgba(20, 31, 17, 0.95)';
@@ -483,6 +496,13 @@ function renderDetail(y, m, d) {
     innerShadow = `<div style="position:absolute;inset:0;border-radius:50%;background:${phaseStyles[phaseIdx]};"></div>`;
   }
 
+  const dayActs = getDayActs(synGroup, dayType);
+  const synActs = dayActs.filter(a => a.type === 'syn');
+  const thunActs = dayActs.filter(a => a.type === 'thun');
+
+  const synHtml = synActs.map(a=>`<div class="det-act"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i> ${a.es}</div>`).join('');
+  const thunHtml = thunActs.map(a=>`<div class="det-act"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i> ${a.es}</div>`).join('');
+
   document.getElementById('detailPanel').innerHTML = `
     <div class="detail-inner">
       <div class="det-row">
@@ -490,32 +510,30 @@ function renderDetail(y, m, d) {
         <div class="det-info">
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div class="det-date">${dateStr}</div>
-            <button onclick="shareDay('${dateStr}', '${t.types[dayType]}', '${dayType}')" 
+            <button onclick="shareDay('${dateStr}', '${t.phases[phaseIdx]}', '${t.savia[synGroup]}', '${t.types[dayType]}', '${t.signs[signIdx]}')" 
                     style="background: none; border: 1px solid var(--accent); color: var(--accent); padding: 6px 12px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 10px; transition: all 0.2s;">
               <i class="ph-duotone ph-share-network" style="font-size:14px;"></i> COMPARTIR
             </button>
           </div>
-          <div class="det-type">${t.types[dayType]}</div>
-          <div class="det-meta"><i class="ph-duotone ph-moon"></i> ${t.phases[phaseIdx]} &nbsp; <i class="ph-duotone ph-sparkles"></i> ${t.signs[signIdx]}</div>
+          <div class="det-type">${t.phases[phaseIdx]}</div>
+          <div class="det-savia">${t.savia[synGroup]}</div>
+          <div class="det-meta"><i class="ph-duotone ph-sparkles"></i> Tránsito en ${t.signs[signIdx]} (Día de ${t.types[dayType]})</div>
         </div>
       </div>
       <div class="det-divider"></div>
-      <div class="det-acts-label">${t.actsLabel}</div>
-      <div class="det-acts">${ACTS_DEF[dayType].map(a=>`<div class="det-act"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i> ${a[lang]}</div>`).join('')}</div>
+      
+      <div class="det-acts-label">🌿 Guía Ancestral</div>
+      <div class="det-acts">${synHtml}</div>
+      
+      ${thunActs.length > 0 ? `
+      <div class="det-acts-label" style="margin-top:16px;">✨ Aporte Biodinámico</div>
+      <div class="det-acts">${thunHtml}</div>
+      ` : ''}
     </div>`;
 }
 
-function renderLegend() {
-  const t = T[lang];
-  const indicators = {root:'ph-tree-evergreen', flower:'ph-flower-tulip', leaf:'ph-leaf', fruit:'ph-orange-slice'};
-  document.getElementById('legend').innerHTML = Object.entries(indicators).map(([k,icon]) =>
-    `<div class="leg"><i class="ph-duotone ${icon}"></i> <span style="color:#fff;font-weight:500;">${t.typeShort[k]}</span></div>`
-  ).join('');
-}
-
-function shareDay(dateStr, typeName, dayType) {
-  const acts = ACTS_DEF[dayType].map(a => a[lang]).join(', ');
-  const textToShare = `🌿 Foco del día: ${dateStr}\n✨ Hoy es ${typeName}.\n\nRecomendado para: ${acts}.`;
+function shareDay(dateStr, phaseName, saviaText, typeName, signName) {
+  const textToShare = `🌿 Foco del día: ${dateStr}\n🌕 Fase: ${phaseName} (${saviaText})\n✨ Tránsito: Día de ${typeName} en ${signName}.\n\nRevisa la app para ver las tareas recomendadas.`;
   if (navigator.share) {
     navigator.share({ title: 'Calendario Lunar Permacultor', text: textToShare }).catch(console.error);
   } else {
@@ -529,11 +547,26 @@ function handleDayTap(d, e) {
   selectedDate = {y:viewYear, m:viewMonth, d};
   render();
   const t = T[lang];
-  const {phaseIdx, signIdx, dayType} = getLunarData(viewYear, viewMonth, d);
+  const {phaseIdx, signIdx, dayType, synGroup} = getLunarData(viewYear, viewMonth, d);
+  
+  const dayActs = getDayActs(synGroup, dayType);
+  const synActs = dayActs.filter(a => a.type === 'syn');
+  const thunActs = dayActs.filter(a => a.type === 'thun');
+
   document.getElementById('ttDate').textContent = `${d} ${t.months[viewMonth]}`;
-  document.getElementById('ttType').innerHTML = `<i class="ph-duotone ph-calendar-check"></i> ${t.types[dayType]}`;
-  document.getElementById('ttPhase').innerHTML = `${t.phases[phaseIdx]} &nbsp;·&nbsp; ${t.signs[signIdx]}`;
-  document.getElementById('ttActs').innerHTML = ACTS_DEF[dayType].map(a => `<div class="det-act"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i> ${a[lang]}</div>`).join('');
+  document.getElementById('ttType').innerHTML = `<i class="ph-duotone ph-moon"></i> ${t.phases[phaseIdx]}`;
+  document.getElementById('ttSavia').textContent = t.savia[synGroup];
+  
+  document.getElementById('ttActsAncestral').innerHTML = `
+    <div class="det-acts-label">🌿 Guía Ancestral</div>
+    <div class="det-acts">${synActs.map(a=>`<div class="det-act"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i> ${a.es}</div>`).join('')}</div>
+  `;
+  
+  document.getElementById('ttActsThun').innerHTML = thunActs.length > 0 ? `
+    <div class="det-acts-label" style="margin-top:16px;">✨ Biodinámica (Día de ${t.types[dayType]})</div>
+    <div class="det-acts">${thunActs.map(a=>`<div class="det-act"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i> ${a.es}</div>`).join('')}</div>
+  ` : '';
+
   document.getElementById('tooltip').classList.add('visible');
 }
 
