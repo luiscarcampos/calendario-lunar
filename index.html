@@ -3,28 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#c2e870">
+<meta name="theme-color" content="#141f11">
 <link rel="manifest" href="./manifest.json">
 <title>Calendario Lunar y Clima Agrícola</title>
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Lora:ital,wght=0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;600&family=Lora:ital,wght=0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
   --accent: #c2e870; 
-  --text: #f8f9f4;
-  --text-dark: #141f11;
-  --muted: rgba(255, 255, 255, 0.65);
-  --border: rgba(255, 255, 255, 0.15);
+  --text: #ffffff;
+  --text-dark: #000000;
+  --muted: #a3b39d;
+  --border: #2a3b24;
   --radius: 16px;
-  --glass-bg: rgba(15, 25, 15, 0.35);
-  --glass-cell: rgba(0, 0, 0, 0.25);
-  --blur: blur(12px);
+  
+  /* Fondos Sólidos de Alto Contraste */
+  --bg-dark: #0b120a;
+  --panel-bg: #182415;
+  --cell-bg: #111a0e;
+  --cell-hover: #1e2d1a;
   
   --cat-1: #95d943;
-  --cat-2: #e09f4e;
-  --cat-3: #4faed1;
-  --cat-4: #d94389;
+  --cat-2: #f0ad5d;
+  --cat-3: #5bc5eb;
+  --cat-4: #f257a0;
 }
 
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -33,46 +36,47 @@ body {
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
+  background-color: var(--bg-dark);
   transition: background-image 0.5s ease-in-out;
 }
 .bg-overlay {
   position: fixed;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(10,20,10,0.3) 0%, rgba(10,20,10,0.85) 100%);
+  /* Fondo súper oscuro para anular el brillo de las fotos */
+  background: rgba(11, 18, 10, 0.88);
   z-index: -1;
 }
 
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
+.solid-panel {
+  background: var(--panel-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
 }
 
 .header { display: flex; justify-content: space-between; align-items: flex-end; padding: 24px 16px 16px; }
-.month-name{ font-family:'Lora',serif; font-size:36px; font-weight:500; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.5);}
-.year-label{ font-family:'DM Mono',monospace; font-size:14px; color:var(--accent); margin-left: 8px;}
+.month-name{ font-family:'Lora',serif; font-size:36px; font-weight:600; line-height: 1;}
+.year-label{ font-family:'DM Mono',monospace; font-size:14px; font-weight:600; color:var(--accent); margin-left: 8px;}
 
 .nav-group{display:flex;align-items:center;gap:6px;}
-.nav-btn{ background: rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; padding:8px; cursor:pointer; color:var(--text); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-.nav-btn:hover{background:rgba(255,255,255,0.15); border-color: var(--accent);}
-.today-btn{ font-size:11px; font-family:'DM Mono',monospace; color:var(--accent); border-color:rgba(192,232,112,0.3); padding: 8px 12px;}
+.nav-btn{ background: var(--cell-bg); border:1px solid var(--border); border-radius:8px; padding:10px; cursor:pointer; color:var(--text); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.nav-btn:hover{background: var(--cell-hover); border-color: var(--accent);}
+.today-btn{ font-size:12px; font-weight:600; font-family:'DM Mono',monospace; color:var(--accent); padding: 10px 14px;}
 
-.weather-widget { margin: 0 14px 16px; padding: 14px; position: relative; z-index: 10; }
-.weather-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
-.weather-loading { font-size: 12px; color: var(--muted); text-align: center; }
-.weather-days { display: flex; justify-content: space-between; gap: 8px; }
-.wf-day { flex: 1; display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.02); padding: 8px 4px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); }
-.wf-date { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
-.wf-icon { margin-bottom: 4px; font-size: 18px; color: var(--accent); }
-.wf-temp { font-size: 13px; font-weight: 500; margin-bottom: 2px;}
-.wf-rain { font-size: 10px; color: #a4d8ef; display: flex; align-items: center; gap: 3px; }
+.weather-widget { margin: 0 14px 16px; padding: 16px; position: relative; z-index: 10; }
+.weather-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight:600; font-family: 'DM Mono', monospace; color: var(--accent); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+.weather-loading { font-size: 13px; color: var(--muted); text-align: center; }
+.weather-days { display: flex; justify-content: space-between; gap: 10px; }
+.wf-day { flex: 1; display: flex; flex-direction: column; align-items: center; background: var(--cell-bg); padding: 10px 4px; border-radius: 10px; border: 1px solid var(--border); }
+.wf-date { font-size: 11px; font-weight:600; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+.wf-icon { margin-bottom: 6px; font-size: 20px; color: var(--text); }
+.wf-temp { font-size: 15px; font-weight: 700; margin-bottom: 2px;}
+.wf-rain { font-size: 11px; font-weight:600; color: var(--cat-3); display: flex; align-items: center; gap: 4px; }
 
 .act-filter-wrap{ padding:0 16px 16px; }
-.act-chip{ display:flex;align-items:center;gap:6px; font-size:12px; font-weight: 500; padding:8px 14px; border-radius:12px; border:1px solid var(--border); background: var(--glass-cell); backdrop-filter: blur(4px); cursor:pointer; color:var(--text); white-space:nowrap; transition:all 0.2s; }
-.act-chip.checked{ background: rgba(255,255,255,0.15); border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
+.act-chip{ display:flex;align-items:center;gap:6px; font-size:13px; font-weight: 600; padding:10px 16px; border-radius:12px; border:1px solid var(--border); background: var(--cell-bg); cursor:pointer; color:var(--text); white-space:nowrap; transition:all 0.1s; }
+.act-chip.checked{ background: var(--accent); border-color: var(--accent); color: var(--text-dark); }
+.act-chip.checked i { color: var(--text-dark) !important; }
 .act-chip i { font-size: 18px; }
 
 .icon-cat-1 { color: var(--cat-1); }
@@ -81,22 +85,22 @@ body {
 .icon-cat-4 { color: var(--cat-4); }
 
 .weekdays{ display:grid; grid-template-columns:repeat(7,1fr); padding:0 12px 8px; }
-.wd{ text-align:center; font-size:11px; color:var(--accent); font-family:'DM Mono',monospace; font-weight:500; opacity: 0.8;}
+.wd{ text-align:center; font-size:12px; color:var(--accent); font-family:'DM Mono',monospace; font-weight:600;}
 
-.cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); padding:0 12px 12px; gap:4px; }
-.day-cell{ position: relative; overflow: hidden; border-radius: 12px; min-height:80px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content: space-between; padding: 6px 4px; background: var(--glass-cell); border:1px solid rgba(255,255,255,0.08); transition: transform 0.1s, border-color 0.15s, background 0.2s; backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); }
-.day-cell:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
-.day-cell.empty{background:none;cursor:default;border:none;backdrop-filter:none;}
-.day-cell.today { border: 1.5px solid var(--accent) !important; background: rgba(194, 232, 112, 0.15); }
-.day-cell.dimmed{opacity:0.25; transform: scale(0.96);}
-.day-cell.selected{border:1.5px solid #fff !important; box-shadow: 0 0 20px rgba(255,255,255,0.2);}
+.cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); padding:0 12px 12px; gap:6px; }
+.day-cell{ position: relative; overflow: hidden; border-radius: 12px; min-height:85px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content: space-between; padding: 8px 4px; background: var(--cell-bg); border:1px solid var(--border); transition: border-color 0.1s, background 0.1s; }
+.day-cell:hover { border-color: var(--muted); background: var(--cell-hover); }
+.day-cell.empty{background:none;cursor:default;border:none;}
+.day-cell.today { border: 2px solid var(--accent) !important; background: rgba(194, 232, 112, 0.1); }
+.day-cell.dimmed{opacity:0.35;}
+.day-cell.selected{border:2px solid #fff !important;}
 
 .day-num, .cell-icons { position: relative; z-index: 2; pointer-events: none; }
-.day-num{ font-size:11px; font-family:'DM Mono',monospace; font-weight:500; color:var(--text); align-self: flex-start; padding-left: 4px; opacity: 0.9;}
-.day-cell.today .day-num{ color:var(--accent); font-weight: 600;}
+.day-num{ font-size:13px; font-family:'DM Mono',monospace; font-weight:600; color:var(--text); align-self: flex-start; padding-left: 6px; }
+.day-cell.today .day-num{ color:var(--accent); font-weight: 700;}
 
-.cell-icons{ display:flex; gap:4px; justify-content:center; min-height:16px; flex-wrap:wrap; }
-.cell-icon i { font-size: 14px; }
+.cell-icons{ display:flex; gap:4px; justify-content:center; min-height:18px; flex-wrap:wrap; }
+.cell-icon i { font-size: 16px; }
 
 .moon-bg { 
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
@@ -111,31 +115,38 @@ body {
 .det-row{display:flex;align-items:center;gap:20px;}
 
 .det-moon-css {
-  width:64px;height:64px;border-radius:50%;position:relative;overflow:hidden;
+  width:72px;height:72px;border-radius:50%;position:relative;overflow:hidden;
   background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e1/FullMoon2010.jpg');
   background-size: cover; background-position: center;
-  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  box-shadow: 0 0 15px rgba(0,0,0,0.8);
 }
 
 .det-info{flex:1;}
-.det-date{font-size:12px;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:4px;}
-.det-type{font-family:'Lora',serif;font-size:24px;font-weight:500; line-height:1.1;}
-.det-savia{font-size:12px; color:var(--muted); margin-top:4px; font-style:italic;}
-.det-meta{font-size:12px;color:var(--accent);margin-top:6px; display: flex; gap: 8px; align-items: center; font-family:'DM Mono',monospace;}
-.det-meta i { font-size: 14px; }
+.det-date{font-size:13px;font-weight:600; color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:6px;}
+.det-type{font-family:'Lora',serif;font-size:26px;font-weight:600; line-height:1.1;}
+.det-savia{font-size:14px; color:var(--muted); margin-top:6px; font-style:italic;}
+.det-meta{font-size:13px;color:var(--text);margin-top:8px; display: flex; gap: 8px; align-items: center; font-family:'DM Mono',monospace; font-weight:500;}
+.det-meta i { font-size: 16px; color:var(--accent); }
 
-.det-divider{height:1px;background:var(--border);margin:16px 0;}
-.det-acts-label{ font-size:11px; text-transform:uppercase; color:var(--muted); font-family:'DM Mono',monospace; margin:14px 0 10px; letter-spacing: 0.05em;}
-.det-acts{display:flex;flex-wrap:wrap;gap:8px;}
-.det-act{ display:flex;align-items:center;gap:8px; font-size:12px; font-weight: 500; background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 14px; border:1px solid rgba(255,255,255,0.05); }
-.det-act i { font-size: 18px; }
+.det-divider{height:1px;background:var(--border);margin:20px 0;}
+.det-acts-label{ font-size:12px; font-weight:600; text-transform:uppercase; color:var(--muted); font-family:'DM Mono',monospace; margin:16px 0 12px; letter-spacing: 0.05em;}
+.det-acts{display:flex;flex-wrap:wrap;gap:10px;}
+.det-act{ display:flex;align-items:center;gap:8px; font-size:14px; font-weight: 600; background:var(--cell-bg); border-radius:10px; padding:10px 16px; border:1px solid var(--border); }
+.det-act i { font-size: 22px; }
 
-.tooltip{ position:fixed; bottom:0;left:0;right:0; background:rgba(20,30,20,0.85); border-top:1px solid var(--border); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius:24px 24px 0 0; padding:20px 24px 34px; z-index:200; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.32,0.72,0,1); max-width:480px; margin:0 auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.8); }
+.tooltip{ position:fixed; bottom:0;left:0;right:0; background:var(--bg-dark); border-top:1px solid var(--border); border-radius:24px 24px 0 0; padding:24px 24px 40px; z-index:200; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.32,0.72,0,1); max-width:480px; margin:0 auto; box-shadow: 0 -20px 40px rgba(0,0,0,0.9); }
 .tooltip.visible{transform:translateY(0);}
-.tooltip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom:12px; }
-.tooltip-close { background: none; border: none; color: var(--muted); cursor: pointer; display: flex; font-size: 24px;}
-.tooltip-date{ font-family:'DM Mono',monospace; font-size:12px; color:var(--accent); }
-.tooltip-type{ font-family:'Lora',serif; font-size:24px; font-weight:500; margin:4px 0; display: flex; align-items: center; gap: 10px;}
+.tooltip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom:16px; }
+.tooltip-close { background: var(--cell-bg); border: 1px solid var(--border); border-radius: 50%; padding:8px; color: var(--text); cursor: pointer; display: flex; font-size: 20px;}
+.tooltip-date{ font-family:'DM Mono',monospace; font-size:13px; font-weight:600; color:var(--accent); }
+.tooltip-type{ font-family:'Lora',serif; font-size:28px; font-weight:600; margin:4px 0; display: flex; align-items: center; gap: 10px;}
+
+.community-footer {
+  text-align: center; padding: 30px 16px 40px; margin-top: auto; 
+  font-family: 'DM Mono', monospace; letter-spacing: 0.05em; color: var(--muted);
+}
+.community-footer .title { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text); }
+.community-footer .subtitle { font-size: 10px; font-weight: 400; opacity: 0.8; }
 </style>
 </head>
 <body>
@@ -156,18 +167,18 @@ body {
     </div>
   </div>
 
-  <div class="weather-widget glass-panel" id="weatherWidget">
+  <div class="weather-widget solid-panel" id="weatherWidget">
     <div class="weather-header">
       <span style="display:flex; align-items:center; gap:6px;"><i class="ph-duotone ph-cloud-rain" style="font-size:16px;"></i> <span id="weatherTitle">Pronóstico Agrícola</span></span>
-      <span style="color:var(--muted); display:flex; align-items:center; gap:4px;" id="weatherLoc"><i class="ph-fill ph-map-pin" style="font-size:12px;"></i> Buscando...</span>
+      <span style="display:flex; align-items:center; gap:4px;" id="weatherLoc"><i class="ph-fill ph-map-pin" style="font-size:14px; color:var(--text);"></i> Buscando...</span>
     </div>
     <div class="weather-loading" id="weatherLoading">Sincronizando satélite...</div>
     <div class="weather-days" id="weatherDays" style="display:none;"></div>
   </div>
 
   <div class="act-filter-wrap">
-    <button onclick="openFilter(event)" style="width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border); color:var(--text); padding:12px; border-radius:12px; display:flex; justify-content:center; align-items:center; gap:8px; font-family:'DM Mono',monospace; font-size:12px; cursor:pointer; transition:background 0.2s;">
-      <i class="ph-duotone ph-faders" style="font-size:18px;"></i> FILTRAR TAREAS
+    <button onclick="openFilter(event)" style="width:100%; background:var(--panel-bg); border:1px solid var(--border); color:var(--text); padding:14px; border-radius:12px; display:flex; justify-content:center; align-items:center; gap:8px; font-family:'DM Mono',monospace; font-size:13px; font-weight:600; cursor:pointer;">
+      <i class="ph-duotone ph-faders" style="font-size:20px; color:var(--accent);"></i> FILTRAR TAREAS
     </button>
   </div>
 
@@ -177,28 +188,39 @@ body {
     <div class="cal-grid" id="calGrid"></div>
   </div>
 
-  <div class="detail glass-panel" id="detailPanel"></div>
+  <div class="detail solid-panel" id="detailPanel"></div>
+
+  <!-- Pie de página con Logo Local -->
+  <div class="community-footer">
+    <div class="title" style="flex-direction: column; gap: 12px; margin-bottom: 10px;">
+      <img src="./logo.png" alt="Logo El Juego" style="height: 48px; width: auto; object-fit: contain;">
+      COMUNIDAD EL JUEGO
+    </div>
+    <div class="subtitle">CRECIMIENTO A TRAVÉS DE LA EXPLORACIÓN</div>
+  </div>
 
 </div>
 
+<!-- Tooltip Día -->
 <div class="tooltip" id="tooltip">
   <div class="tooltip-header">
     <div class="tooltip-date" id="ttDate"></div>
     <button class="tooltip-close" onclick="dismissTooltip(event)"><i class="ph ph-x"></i></button>
   </div>
   <div class="tooltip-type" id="ttType"></div>
-  <div class="det-savia" id="ttSavia" style="margin-bottom: 16px;"></div>
+  <div class="det-savia" id="ttSavia" style="margin-bottom: 20px;"></div>
   <div id="ttActsAncestral"></div>
   <div id="ttActsThun"></div>
 </div>
 
+<!-- Tooltip Filtros -->
 <div class="tooltip" id="filterTooltip">
   <div class="tooltip-header">
-    <div class="tooltip-type" style="font-size: 20px;">Filtros de Tareas</div>
+    <div class="tooltip-type" style="font-size: 22px;">Filtros de Tareas</div>
     <button class="tooltip-close" onclick="closeFilter(event)"><i class="ph ph-x"></i></button>
   </div>
-  <div id="filterCategories" style="max-height: 50vh; overflow-y: auto; padding-bottom: 20px;"></div>
-  <button onclick="clearActFilter(); closeFilter()" style="width:100%; background:none; border:1px solid var(--accent); color:var(--accent); padding:12px; border-radius:12px; font-family:'DM Mono',monospace; cursor:pointer; font-weight: 500; transition:all 0.2s;">MOSTRAR TODAS</button>
+  <div id="filterCategories" style="max-height: 50vh; overflow-y: auto; padding-bottom: 24px;"></div>
+  <button onclick="clearActFilter(); closeFilter()" style="width:100%; background:var(--accent); border:none; color:var(--text-dark); padding:14px; border-radius:12px; font-family:'DM Mono',monospace; font-size:14px; font-weight: 700; cursor:pointer;">MOSTRAR TODAS</button>
 </div>
 
 <script>
@@ -219,9 +241,7 @@ const MONTH_BGS = [
 
 const SIGN_TYPE = {0:'fruit',1:'root',2:'flower',3:'leaf',4:'fruit',5:'root',6:'flower',7:'leaf',8:'fruit',9:'root',10:'flower',11:'leaf'};
 
-// ESTRUCTURA UNIFICADA: Sinódico (Primario) y Thun (Secundario)
 const ALL_ACTS = [
-  // --- ANCESTRALES (SINÓDICO) ---
   {key:'pest', icon:'ph-bug', es:'Control de plagas', cat: 1, type:'syn', group:'nueva'},
   {key:'weed', icon:'ph-plant-slash', es:'Deshierbe', cat: 1, type:'syn', group:'nueva'},
   {key:'prune_clean', icon:'ph-scissors', es:'Poda de sanidad', cat: 1, type:'syn', group:'nueva'},
@@ -242,7 +262,6 @@ const ALL_ACTS = [
   {key:'timber', icon:'ph-axe', es:'Cortar madera', cat: 2, type:'syn', group:'menguante'},
   {key:'preserve', icon:'ph-jar', es:'Preparar conservas', cat: 2, type:'syn', group:'menguante'},
 
-  // --- BIODINÁMICOS COMPLEMENTARIOS (THUN) ---
   {key:'soil_prep', icon:'ph-shovel', es:'Preparar camas', cat: 1, type:'thun', group:'root'},
   {key:'trees', icon:'ph-tree', es:'Cuidado de árboles', cat: 1, type:'thun', group:'root'},
 
@@ -324,11 +343,11 @@ async function initializeGlobalLocation() {
       (pos) => {
         userLatitude = pos.coords.latitude; userLongitude = pos.coords.longitude;
         gmtOffset = -new Date().getTimezoneOffset() / 60;
-        locEl.innerHTML = `<i class="ph-fill ph-map-pin" style="font-size:12px;"></i> Satélite Conectado`;
+        locEl.innerHTML = `<i class="ph-fill ph-map-pin" style="font-size:14px; color:var(--accent);"></i> Satélite Conectado`;
         loadWeatherData(userLatitude, userLongitude);
       },
       () => {
-        locEl.innerHTML = `<i class="ph-fill ph-map-pin" style="font-size:12px;"></i> San Rafael (Antioquia)`;
+        locEl.innerHTML = `<i class="ph-fill ph-map-pin" style="font-size:14px; color:var(--accent);"></i> San Rafael (Antioquia)`;
         loadWeatherData(userLatitude, userLongitude);
       }
     );
@@ -361,7 +380,7 @@ async function loadWeatherData(lat, lon) {
           <div class="wf-date">${i === 0 ? 'Hoy' : dayName}</div>
           <div class="wf-icon"><i class="ph-duotone ${icon}"></i></div>
           <div class="wf-temp">${maxTemp}°</div>
-          <div class="wf-rain"><i class="ph-duotone ph-drop" style="font-size:12px;"></i> ${rainProb}%</div>
+          <div class="wf-rain"><i class="ph-duotone ph-drop" style="font-size:14px;"></i> ${rainProb}%</div>
         </div>
       `;
     }
@@ -376,8 +395,8 @@ function buildActFilter() {
   let html = '';
   for(let c=1; c<=4; c++) {
     if(groups[c].length === 0) continue;
-    html += `<div style="font-size:12px; color:var(--accent); font-family:'DM Mono',monospace; margin:20px 0 10px; text-transform:uppercase; letter-spacing:0.05em;">${catNames[c]}</div>`;
-    html += `<div style="display:flex; flex-wrap:wrap; gap:8px;">`;
+    html += `<div style="font-size:13px; font-weight:600; color:var(--accent); font-family:'DM Mono',monospace; margin:24px 0 12px; text-transform:uppercase; letter-spacing:0.05em;">${catNames[c]}</div>`;
+    html += `<div style="display:flex; flex-wrap:wrap; gap:10px;">`;
     groups[c].forEach(a => {
       html += `<button class="act-chip${checkedActs.has(a.key)?' checked':''}" onclick="toggleAct('${a.key}')"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i> ${a.es}</button>`;
     });
@@ -427,7 +446,6 @@ function render() {
     const dayActs = getDayActs(synGroup, dayType);
     const matches = checkedActs.size === 0 || dayActs.some(a => checkedActs.has(a.key));
     
-    // Mostramos hasta 4 iconos, priorizando los ancestrales
     const sortedActs = [...dayActs].sort((a,b) => (a.type==='syn' ? -1 : 1));
     const iconsHtml = sortedActs.slice(0, 4).map(a => `<span class="cell-icon"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i></span>`).join('');
 
@@ -440,8 +458,8 @@ function render() {
   }
   document.getElementById('calGrid').innerHTML = html;
 
-  const sh = 'rgba(20, 31, 17, 0.95)';
-  const shF = 'rgba(20, 31, 17, 0.5)';
+  const sh = 'rgba(11, 18, 10, 0.95)';
+  const shF = 'rgba(11, 18, 10, 0.5)';
 
   const cells = document.querySelectorAll('#calGrid .day-cell:not(.empty)');
   cells.forEach((cell, index) => {
@@ -477,8 +495,8 @@ function renderDetail(y, m, d) {
   const {phaseIdx, signIdx, dayType, synGroup} = getLunarData(y, m, d);
   const dateStr = `${t.wdFull[new Date(y, m, d).getDay()]} , ${d} ${t.months[m]} ${y}`;
 
-  const sh = 'rgba(20, 31, 17, 0.95)';
-  const shF = 'rgba(20, 31, 17, 0.5)';
+  const sh = 'rgba(11, 18, 10, 0.95)';
+  const shF = 'rgba(11, 18, 10, 0.5)';
 
   const phaseStyles = {
     1: `radial-gradient(ellipse 85% 100% at 15% 50%, ${sh} 50%, ${shF} 70%, transparent 95%)`,
@@ -511,8 +529,8 @@ function renderDetail(y, m, d) {
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div class="det-date">${dateStr}</div>
             <button onclick="shareDay('${dateStr}', '${t.phases[phaseIdx]}', '${t.savia[synGroup]}', '${t.types[dayType]}', '${t.signs[signIdx]}')" 
-                    style="background: none; border: 1px solid var(--accent); color: var(--accent); padding: 6px 12px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 10px; transition: all 0.2s;">
-              <i class="ph-duotone ph-share-network" style="font-size:14px;"></i> COMPARTIR
+                    style="background: var(--bg-dark); border: 1px solid var(--border); color: var(--accent); padding: 8px 14px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; font-weight:600; transition: all 0.2s;">
+              <i class="ph-duotone ph-share-network" style="font-size:16px;"></i> COMPARTIR
             </button>
           </div>
           <div class="det-type">${t.phases[phaseIdx]}</div>
@@ -526,7 +544,7 @@ function renderDetail(y, m, d) {
       <div class="det-acts">${synHtml}</div>
       
       ${thunActs.length > 0 ? `
-      <div class="det-acts-label" style="margin-top:16px;">✨ Aporte Biodinámico</div>
+      <div class="det-acts-label" style="margin-top:20px;">✨ Aporte Biodinámico</div>
       <div class="det-acts">${thunHtml}</div>
       ` : ''}
     </div>`;
@@ -554,7 +572,7 @@ function handleDayTap(d, e) {
   const thunActs = dayActs.filter(a => a.type === 'thun');
 
   document.getElementById('ttDate').textContent = `${d} ${t.months[viewMonth]}`;
-  document.getElementById('ttType').innerHTML = `<i class="ph-duotone ph-moon"></i> ${t.phases[phaseIdx]}`;
+  document.getElementById('ttType').innerHTML = `<i class="ph-duotone ph-moon" style="color:var(--accent);"></i> ${t.phases[phaseIdx]}`;
   document.getElementById('ttSavia').textContent = t.savia[synGroup];
   
   document.getElementById('ttActsAncestral').innerHTML = `
@@ -563,7 +581,7 @@ function handleDayTap(d, e) {
   `;
   
   document.getElementById('ttActsThun').innerHTML = thunActs.length > 0 ? `
-    <div class="det-acts-label" style="margin-top:16px;">✨ Biodinámica (Día de ${t.types[dayType]})</div>
+    <div class="det-acts-label" style="margin-top:20px;">✨ Biodinámica (Día de ${t.types[dayType]})</div>
     <div class="det-acts">${thunActs.map(a=>`<div class="det-act"><i class="ph-duotone ${a.icon} icon-cat-${a.cat}"></i> ${a.es}</div>`).join('')}</div>
   ` : '';
 
