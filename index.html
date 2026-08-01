@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#141f11">
-<link rel="manifest" href="./manifest.json">
+<!-- El ?v=2 obliga al celular a leer el manifest nuevo -->
+<link rel="manifest" href="./manifest.json?v=2">
 <title>AgroLuna</title>
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 <style>
@@ -46,22 +47,23 @@ body {
   z-index: -1;
 }
 
-/* --- MARCA DE AGUA FLOTANTE CON ENLACE --- */
+/* --- MARCA DE AGUA FLOTANTE CON CONFIRMACIÓN --- */
 .watermark-link {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 10000; /* Siempre por encima de todo */
+  z-index: 10000;
   display: block;
-  opacity: 0.85; /* Ligeramente transparente */
+  opacity: 0.85;
+  cursor: pointer;
   transition: opacity 0.3s ease, transform 0.2s ease;
 }
 .watermark-link:hover, .watermark-link:active {
   opacity: 1;
-  transform: scale(1.08); /* Crece un poquito al tocarlo */
+  transform: scale(1.08);
 }
 .watermark-logo {
-  width: 55px; /* Tamaño sutil */
+  width: 55px; 
   height: auto;
   display: block;
   filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.8));
@@ -198,10 +200,10 @@ body {
 </head>
 <body>
 
-<!-- LOGO FLOTANTE CON ENLACE (MARCA DE AGUA EN TODA LA APP) -->
-<a href="https://www.eljuego.community" target="_blank" rel="noopener noreferrer" class="watermark-link">
+<!-- LOGO FLOTANTE QUE ABRE CONFIRMACIÓN -->
+<div class="watermark-link" onclick="openWebConfirm(event)">
   <img src="./logo.png" alt="Logo El Juego" class="watermark-logo">
-</a>
+</div>
 
 <!-- PANTALLA DE CARGA (SPLASH SCREEN) -->
 <div id="splashScreen">
@@ -275,6 +277,21 @@ body {
   </div>
   <div id="filterCategories" style="max-height: 50vh; overflow-y: auto; padding-bottom: 24px;"></div>
   <button onclick="clearActFilter(); closeFilter()" style="width:100%; background:var(--accent); border:none; color:var(--text-dark); padding:14px; border-radius:12px; font-family:'DM Mono',monospace; font-size:14px; font-weight: 700; cursor:pointer;">MOSTRAR TODAS</button>
+</div>
+
+<!-- Tooltip Confirmación Web -->
+<div class="tooltip" id="webConfirmTooltip">
+  <div class="tooltip-header">
+    <div class="tooltip-type" style="font-size: 22px;">El Juego</div>
+    <button class="tooltip-close" onclick="closeWebConfirm(event)"><i class="ph ph-x"></i></button>
+  </div>
+  <div style="font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.5;">
+    ¿Deseas visitar nuestra página web <strong>www.eljuego.community</strong> para conocer más sobre el proyecto?
+  </div>
+  <div style="display: flex; gap: 12px;">
+    <button onclick="closeWebConfirm(event)" style="flex:1; background:var(--cell-bg); border:1px solid var(--border); color:var(--text); padding:14px; border-radius:12px; font-family:'DM Mono',monospace; font-size:14px; font-weight: 700; cursor:pointer;">CANCELAR</button>
+    <a href="https://www.eljuego.community" target="_blank" rel="noopener noreferrer" onclick="closeWebConfirm(event)" style="flex:1; background:var(--accent); border:none; color:var(--text-dark); padding:14px; border-radius:12px; font-family:'DM Mono',monospace; font-size:14px; font-weight: 700; cursor:pointer; text-align:center; text-decoration:none; display: flex; align-items: center; justify-content: center;">SÍ, VISITAR</a>
+  </div>
 </div>
 
 <script>
@@ -475,6 +492,11 @@ function clearActFilter() { checkedActs.clear(); render(); }
 function openFilter(e) { if(e) e.stopPropagation(); buildActFilter(); document.getElementById('filterTooltip').classList.add('visible'); }
 function closeFilter(e) { if(e)e.stopPropagation(); document.getElementById('filterTooltip').classList.remove('visible'); }
 
+// Funciones del modal de confirmación web
+function openWebConfirm(e) { if(e) e.stopPropagation(); document.getElementById('webConfirmTooltip').classList.add('visible'); }
+function closeWebConfirm(e) { if(e) e.stopPropagation(); document.getElementById('webConfirmTooltip').classList.remove('visible'); }
+
+
 function getDayActs(synGroup, dayType) {
   return ALL_ACTS.filter(a => (a.type === 'syn' && a.group === synGroup) || (a.type === 'thun' && a.group === dayType));
 }
@@ -650,9 +672,16 @@ function handleDayTap(d, e) {
 }
 
 function dismissTooltip(e) { if(e)e.stopPropagation(); document.getElementById('tooltip').classList.remove('visible'); }
-document.addEventListener('click', () => { dismissTooltip(); closeFilter(); });
+
+// Cierra cualquier modal abierto si se hace clic afuera
+document.addEventListener('click', () => { 
+  dismissTooltip(); 
+  closeFilter(); 
+  closeWebConfirm(); 
+});
 document.getElementById('tooltip').addEventListener('click', e => e.stopPropagation());
 document.getElementById('filterTooltip').addEventListener('click', e => e.stopPropagation());
+document.getElementById('webConfirmTooltip').addEventListener('click', e => e.stopPropagation());
 
 let touchStartX = 0;
 const calBox = document.getElementById('calContainer');
