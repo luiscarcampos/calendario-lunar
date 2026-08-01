@@ -46,18 +46,25 @@ body {
   z-index: -1;
 }
 
-/* --- MARCA DE AGUA FLOTANTE (LOGO) --- */
-.watermark-logo {
+/* --- MARCA DE AGUA FLOTANTE CON ENLACE --- */
+.watermark-link {
   position: fixed;
   bottom: 24px;
   right: 24px;
+  z-index: 10000; /* Siempre por encima de todo */
+  display: block;
+  opacity: 0.85; /* Ligeramente transparente */
+  transition: opacity 0.3s ease, transform 0.2s ease;
+}
+.watermark-link:hover, .watermark-link:active {
+  opacity: 1;
+  transform: scale(1.08); /* Crece un poquito al tocarlo */
+}
+.watermark-logo {
   width: 55px; /* Tamaño sutil */
   height: auto;
-  z-index: 10000; /* Siempre por encima de todo */
-  opacity: 0.85; /* Ligeramente transparente */
-  pointer-events: none; /* Para que no bloquee los clics si toca algún botón */
+  display: block;
   filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.8));
-  transition: opacity 0.3s ease;
 }
 
 /* --- ESTILOS DE LA PANTALLA DE CARGA (SPLASH SCREEN) --- */
@@ -191,8 +198,10 @@ body {
 </head>
 <body>
 
-<!-- LOGO FLOTANTE (MARCA DE AGUA EN TODA LA APP) -->
-<img src="./logo.png" alt="Logo El Juego" class="watermark-logo">
+<!-- LOGO FLOTANTE CON ENLACE (MARCA DE AGUA EN TODA LA APP) -->
+<a href="https://www.eljuego.community" target="_blank" rel="noopener noreferrer" class="watermark-link">
+  <img src="./logo.png" alt="Logo El Juego" class="watermark-logo">
+</a>
 
 <!-- PANTALLA DE CARGA (SPLASH SCREEN) -->
 <div id="splashScreen">
