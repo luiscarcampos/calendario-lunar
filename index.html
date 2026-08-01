@@ -42,9 +42,49 @@ body {
 .bg-overlay {
   position: fixed;
   inset: 0;
-  /* Fondo súper oscuro para anular el brillo de las fotos */
   background: rgba(11, 18, 10, 0.88);
   z-index: -1;
+}
+
+/* --- MARCA DE AGUA FLOTANTE (LOGO) --- */
+.watermark-logo {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 55px; /* Tamaño sutil */
+  height: auto;
+  z-index: 10000; /* Siempre por encima de todo */
+  opacity: 0.85; /* Ligeramente transparente */
+  pointer-events: none; /* Para que no bloquee los clics si toca algún botón */
+  filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.8));
+  transition: opacity 0.3s ease;
+}
+
+/* --- ESTILOS DE LA PANTALLA DE CARGA (SPLASH SCREEN) --- */
+#splashScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-image: url('./883252A1-FFC3-4A14-8574-ED064B2704FE.jpg');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 1s ease-in-out, visibility 1s ease-in-out;
+}
+#splashScreen.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+.splash-text {
+  color: white;
+  font-family: 'Lora', serif;
+  font-size: 28px;
+  font-weight: 600;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+  letter-spacing: 0.02em;
 }
 
 .solid-panel {
@@ -142,14 +182,22 @@ body {
 .tooltip-type{ font-family:'Lora',serif; font-size:28px; font-weight:600; margin:4px 0; display: flex; align-items: center; gap: 10px;}
 
 .community-footer {
-  text-align: center; padding: 30px 16px 40px; margin-top: auto; 
+  text-align: center; padding: 20px 16px 60px; margin-top: auto; 
   font-family: 'DM Mono', monospace; letter-spacing: 0.05em; color: var(--muted);
 }
-.community-footer .title { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text); }
+.community-footer .title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px;}
 .community-footer .subtitle { font-size: 10px; font-weight: 400; opacity: 0.8; }
 </style>
 </head>
 <body>
+
+<!-- LOGO FLOTANTE (MARCA DE AGUA EN TODA LA APP) -->
+<img src="./logo.png" alt="Logo El Juego" class="watermark-logo">
+
+<!-- PANTALLA DE CARGA (SPLASH SCREEN) -->
+<div id="splashScreen">
+  <div class="splash-text">Comunidad El Juego</div>
+</div>
 
 <div class="bg-overlay"></div>
 
@@ -190,12 +238,9 @@ body {
 
   <div class="detail solid-panel" id="detailPanel"></div>
 
-  <!-- Pie de página con Logo Local -->
+  <!-- Pie de página simplificado -->
   <div class="community-footer">
-    <div class="title" style="flex-direction: column; gap: 12px; margin-bottom: 10px;">
-      <img src="./logo.png" alt="Logo El Juego" style="height: 48px; width: auto; object-fit: contain;">
-      COMUNIDAD EL JUEGO
-    </div>
+    <div class="title">COMUNIDAD EL JUEGO</div>
     <div class="subtitle">CRECIMIENTO A TRAVÉS DE LA EXPLORACIÓN</div>
   </div>
 
@@ -224,6 +269,13 @@ body {
 </div>
 
 <script>
+// --- LÓGICA DEL SPLASH SCREEN ---
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('splashScreen').classList.add('hidden');
+  }, 2000); 
+});
+
 const MONTH_BGS = [
   'url(https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1080&auto=format&fit=crop)',
   'url(https://images.unsplash.com/photo-1535202610320-919f9b13de77?q=80&w=1080&auto=format&fit=crop)',
