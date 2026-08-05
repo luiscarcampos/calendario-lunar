@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#141f11">
-<link rel="manifest" href="./manifest.json?v=4">
+<link rel="manifest" href="./manifest.json?v=5">
 <title>AgroLuna</title>
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 <style>
@@ -50,7 +50,7 @@ body {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 10000;
+  z-index: 10000; /* Nivel 10000 */
   display: block;
   opacity: 0.85;
   cursor: pointer;
@@ -173,17 +173,17 @@ body {
 
 <!-- LOGO FLOTANTE QUE ABRE CONFIRMACIÓN -->
 <div class="watermark-link" onclick="openWebConfirm(event)">
-  <img src="./logo.png?v=4" alt="Logo El Juego" class="watermark-logo">
+  <img src="./logo.png?v=5" alt="Logo El Juego" class="watermark-logo">
 </div>
 
-<!-- PANTALLA DE CARGA (Con autodestrucción y cierre al toque) -->
+<!-- PANTALLA DE CARGA (El z-index 10005 asegura que tape todo, incluso al logo flotante) -->
 <div id="splashScreen" onclick="this.remove()" style="
-  position: fixed; inset: 0; z-index: 9999;
+  position: fixed; inset: 0; z-index: 10005;
   background-image: url('./883252A1-FFC3-4A14-8574-ED064B2704FE.jpg');
   background-size: cover; background-position: center;
   display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
   padding-bottom: 40px; transition: opacity 0.5s ease; cursor: pointer;">
-  <img src="./logo.png?v=4" alt="Logo" style="width: 55px; height: auto; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));">
+  <img src="./logo.png?v=5" alt="Logo" style="width: 55px; height: auto; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));">
 </div>
 
 <div class="bg-overlay"></div>
@@ -274,10 +274,10 @@ body {
 setTimeout(() => {
   const splash = document.getElementById('splashScreen');
   if (splash) {
-    splash.style.opacity = '0'; // Se desvanece suave
-    setTimeout(() => splash.remove(), 500); // 0.5s después, se elimina del código físicamente
+    splash.style.opacity = '0'; 
+    setTimeout(() => splash.remove(), 500); 
   }
-}, 2500); // Arranca a los 2.5 segundos
+}, 2500); 
 
 const MONTH_BGS = [
   'url(https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1080&auto=format&fit=crop)',
