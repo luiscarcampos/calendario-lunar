@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#141f11">
-<link rel="manifest" href="./manifest.json?v=3">
+<link rel="manifest" href="./manifest.json?v=4">
 <title>AgroLuna</title>
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 <style>
@@ -65,29 +65,6 @@ body {
   height: auto;
   display: block;
   filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.8));
-}
-
-/* --- SPLASH SCREEN A PRUEBA DE FALLOS (CSS PURO) --- */
-@keyframes fadeOutSplash {
-  0% { opacity: 1; visibility: visible; }
-  80% { opacity: 1; visibility: visible; }
-  100% { opacity: 0; visibility: hidden; }
-}
-#splashScreen {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background-image: url('./883252A1-FFC3-4A14-8574-ED064B2704FE.jpg');
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end; /* Alinea el contenido abajo */
-  padding-bottom: 40px; /* Margen inferior */
-  /* La animación dura 3 segundos y luego desaparece para siempre */
-  animation: fadeOutSplash 3s ease-in-out forwards;
-  pointer-events: none; /* Garantiza que nunca bloquee la pantalla táctil */
 }
 
 .solid-panel {
@@ -196,12 +173,17 @@ body {
 
 <!-- LOGO FLOTANTE QUE ABRE CONFIRMACIÓN -->
 <div class="watermark-link" onclick="openWebConfirm(event)">
-  <img src="./logo.png?v=3" alt="Logo El Juego" class="watermark-logo">
+  <img src="./logo.png?v=4" alt="Logo El Juego" class="watermark-logo">
 </div>
 
-<!-- PANTALLA DE CARGA (FOTO + LOGO PEQUEÑO AL CENTRO ABAJO) -->
-<div id="splashScreen">
-  <img src="./logo.png?v=3" alt="Logo" style="width: 55px; height: auto; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));">
+<!-- PANTALLA DE CARGA (Con autodestrucción y cierre al toque) -->
+<div id="splashScreen" onclick="this.remove()" style="
+  position: fixed; inset: 0; z-index: 9999;
+  background-image: url('./883252A1-FFC3-4A14-8574-ED064B2704FE.jpg');
+  background-size: cover; background-position: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  padding-bottom: 40px; transition: opacity 0.5s ease; cursor: pointer;">
+  <img src="./logo.png?v=4" alt="Logo" style="width: 55px; height: auto; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));">
 </div>
 
 <div class="bg-overlay"></div>
@@ -243,7 +225,6 @@ body {
 
   <div class="detail solid-panel" id="detailPanel"></div>
 
-  <!-- Pie de página simplificado -->
   <div class="community-footer">
     <div class="title">COMUNIDAD EL JUEGO</div>
     <div class="subtitle">CRECIMIENTO A TRAVÉS DE LA EXPLORACIÓN</div>
@@ -289,7 +270,14 @@ body {
 </div>
 
 <script>
-// Eliminamos TODO el Javascript del SplashScreen. Ahora es 100% CSS a prueba de fallos.
+// ELIMINADOR ABSOLUTO DEL SPLASH SCREEN
+setTimeout(() => {
+  const splash = document.getElementById('splashScreen');
+  if (splash) {
+    splash.style.opacity = '0'; // Se desvanece suave
+    setTimeout(() => splash.remove(), 500); // 0.5s después, se elimina del código físicamente
+  }
+}, 2500); // Arranca a los 2.5 segundos
 
 const MONTH_BGS = [
   'url(https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1080&auto=format&fit=crop)',
@@ -480,11 +468,8 @@ function toggleAct(key) {
 function clearActFilter() { checkedActs.clear(); render(); }
 function openFilter(e) { if(e) e.stopPropagation(); buildActFilter(); document.getElementById('filterTooltip').classList.add('visible'); }
 function closeFilter(e) { if(e)e.stopPropagation(); document.getElementById('filterTooltip').classList.remove('visible'); }
-
-// Funciones del modal de confirmación web
 function openWebConfirm(e) { if(e) e.stopPropagation(); document.getElementById('webConfirmTooltip').classList.add('visible'); }
 function closeWebConfirm(e) { if(e) e.stopPropagation(); document.getElementById('webConfirmTooltip').classList.remove('visible'); }
-
 
 function getDayActs(synGroup, dayType) {
   return ALL_ACTS.filter(a => (a.type === 'syn' && a.group === synGroup) || (a.type === 'thun' && a.group === dayType));
@@ -492,7 +477,6 @@ function getDayActs(synGroup, dayType) {
 
 function render() {
   const t = T[lang];
-  
   const safeMonth = Math.max(0, Math.min(11, viewMonth));
   document.body.style.backgroundImage = MONTH_BGS[safeMonth];
   document.body.style.backgroundSize = 'cover';
@@ -569,7 +553,6 @@ function renderDetail(y, m, d) {
 
   const sh = 'rgba(11, 18, 10, 0.95)';
   const shF = 'rgba(11, 18, 10, 0.5)';
-
   const phaseStyles = {
     1: `radial-gradient(ellipse 85% 100% at 15% 50%, ${sh} 50%, ${shF} 70%, transparent 95%)`,
     2: `linear-gradient(90deg, ${sh} 45%, ${shF} 50%, transparent 55%)`,
@@ -662,7 +645,6 @@ function handleDayTap(d, e) {
 
 function dismissTooltip(e) { if(e)e.stopPropagation(); document.getElementById('tooltip').classList.remove('visible'); }
 
-// Cierra cualquier modal abierto si se hace clic afuera
 document.addEventListener('click', () => { 
   dismissTooltip(); 
   closeFilter(); 
